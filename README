@@ -32,7 +32,7 @@ Package: queues
 
 General API functions:
 ----------------------
-* make-queue (&key type comparison)
+* make-queue (&key type comparison copy minimum-size)
      <type> is a symbol, one of
          simple-queue priority-queue
          simple-cqueue priority-cqueue
