@@ -50,11 +50,24 @@
 ;;; Functions
 ;;;
 
-(defun make-simple-queue (&key minimum-size)
-  (let ((*minimum-size* (or minimum-size
-			    *minimum-size*)))
-    (make-instance 'simple-queue)))
-
+(defun make-simple-queue (&key minimum-size copy (class 'simple-queue))
+  (let* ((*minimum-size* (or (when copy
+			       (length (elements-of copy)))
+			     minimum-size
+			     *minimum-size*))
+	 (queue (make-instance class)))
+    (when (typep copy 'simple-queue)
+      (loop
+	 with vec = (elements-of queue)
+	 with cvec = (elements-of copy)
+	 for x from (start-of copy) below (+ (start-of copy)
+					     (size-of copy))
+	 for j from 0
+	 do (setf (aref vec j) (aref cvec x)))
+      (setf (start-of queue) 0
+	    (size-of queue) (size-of copy)))
+    queue))
+    
 ;;; ------------------------------------------------------------------
 
 (defmethod qsize ((q simple-queue))
@@ -114,7 +127,8 @@
 ;;; ------------------------------------------------------------------
 
 (defmethod qpop ((queue simple-queue) &optional empty-value)
-  (let ((ret (qtop queue))
+  (let ((ret (when (plusp (size-of queue))
+	       (aref (elements-of queue) (start-of queue))))
 	(vector (elements-of queue)))
     (unless ret
       (return-from qpop empty-value))
@@ -126,10 +140,10 @@
     (let ((len (length vector)))
       (cond ((zerop (size-of queue))
 	     (setf (start-of queue) 0))
-	    ((and (> len (queue-min-size queue))
+	    ((and (> len (min-size-of queue))
 		  (< (size-of queue) (floor len 3)))
 	     ;; Queue should be downsized
-	     (let* ((min (queue-min-size queue))
+	     (let* ((min (min-size-of queue))
 		    (new-size
 		     (* min (expt 2 (ceiling
 				     (log (ceiling (size-of queue) min) 2))))))
@@ -161,10 +175,11 @@
 
 ;;; ------------------------------------------------------------------
 
-(defmethod qtop ((queue simple-queue))
-  (when (plusp (size-of queue))
-    (values (aref (elements-of queue) (start-of queue))
-	    t)))
+(defmethod qtop ((queue simple-queue) &optional empty-value)
+  (if (plusp (size-of queue))
+      (values (aref (elements-of queue) (start-of queue))
+	      t)
+      empty-value))
 
 ;;; ------------------------------------------------------------------
 

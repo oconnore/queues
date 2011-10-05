@@ -58,7 +58,7 @@
             :initarg :compare
             :accessor queue-comparison)))
 
-(defmethod print-object ((x queue) s)
+(defmethod print-object ((x priority-queue) s)
   (print-unreadable-object (x s :type t :identity t)
     (format s "~A [~A]"
             (when (min-node-of x)
@@ -69,15 +69,16 @@
 ;;; Queue construction
 ;;;
 
-(defun make-priority-queue (&key (compare #'<) copy)
+(defun make-priority-queue (&key compare copy (class 'priority-queue))
   (if copy
       (let* ((queue (make-instance
-                    'queue
+		     class
                     :compare (queue-comparison copy))))
         (setf (min-node-of queue) (deep-copy (min-node-of copy))
               (queue-size queue) (queue-size copy))
         queue)
-      (make-instance 'queue :compare compare)))
+      (make-instance class
+		     :compare (or compare #'<))))
 
 ;;;
 ;;; Queue operations
@@ -132,24 +133,25 @@
 
 ;;; ---------------------------------------------------------------------------
 
-(defun %queue-push (queue element node)
+(defun %queue-push (queue element rnode)
+  (declare (optimize (debug 3)))
   (let ((min (min-node-of queue)))
     (incf (queue-size queue))
-    (flet ((get-node (node element)
-	     (cond ((node
+    (flet ((get-node (node)
+	     (cond ((queue-node-p node)
 		     (setf (node-value node) element
 			   (node-degree node) 0)
-		     node))
+		     node)
 		   (t (make-node :value element
 				 :degree 0)))))
       (if min
-	  (let* ((new-node (get-node node element))
+	  (let* ((new-node (get-node rnode))
 		 (new (%insert (min-node-of queue) new-node)))
 	    (when (funcall (queue-comparison queue)
 			   element (node-value min))
 	      (setf (min-node-of queue) new)))
 	  (setf (min-node-of queue)
-		(let ((node (get-node node element)))
+		(let ((node (get-node rnode)))
 		  (setf (node-left node) node
 			(node-right node) node))))))
   element)
@@ -241,7 +243,7 @@
 
 ;;; ---------------------------------------------------------------------------
 
-(defmethod queue-merge-safe ((queue1 priority-queue) (queue2 priority-queue)))
+(defmethod queue-merge-safe ((queue1 priority-queue) (queue2 priority-queue))
   "Nondestructive merge"
   (when (%queue-compatible-p queue1 queue2)
     (let* ((new-queue (make-priority-queue :compare (queue-comparison queue1)))
@@ -318,7 +320,7 @@
 (defmethod qpop ((queue priority-queue) &optional empty-value)
   (let ((min (min-node-of queue)))
     (unless min
-      (return-from queue-pop
+      (return-from qpop
         (values empty-value nil)))
     (labels ((add-children (node)
                (map-children (lambda (x)
@@ -385,7 +387,7 @@
 
 ;;; ---------------------------------------------------------------------------
 
-(defmethod queue-change (queue node newkey)
+(defmethod queue-change ((queue priority-queue) node newkey)
   (cond ((funcall (queue-comparison queue) newkey (node-value node))
 	 (queue-decrease queue node newkey))
 	(t
@@ -403,7 +405,7 @@
         (%node-cut queue node parent)
         (%node-cascading-cut queue parent))
       (setf (min-node-of queue) node)
-      (queue-pop queue)
+      (qpop queue)
       (node-value node))))
 
 ;;;

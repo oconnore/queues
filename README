@@ -43,8 +43,10 @@ General API functions:
      <minimum-size> is the minimum size of the queue. This is only
          applicable to simple-queues
 * qpush (queue element)
-* qpop (queue)
-* qtop (queue)
+* qpop (queue &optional (empty nil))
+     <empty> is the value returned if the queue is empty. The second
+     value returned is t when an element was found.
+* qtop (queue &optional empty)
 * qsize (queue)
 * map-queue (function queue)
      Note:

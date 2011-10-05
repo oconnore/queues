@@ -16,18 +16,26 @@
 
 (in-package :queues)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export '(simple-queue
+	    simple-cqueue
+	    priority-queue
+	    priority-cqueue
+	    make-queue)))
+
+
 ;;;
 ;;; Interface generics
 ;;;
 
 ;; General
 (defgeneric qpush (queue element))
-(defgeneric qtop (queue))
-(defgeneric qpop (queue))
+(defgeneric qtop (queue &optional empty))
+(defgeneric qpop (queue &optional empty))
 (defgeneric qsize (queue))
 (defgeneric qclear (queue))
 (defgeneric map-queue (fn queue))
-(defgeneric print-queue (queue))
+(defgeneric print-queue (queue &optional stream))
 ;; Priority queue
 (defgeneric queue-merge (queue-1 queue-2))
 (defgeneric queue-merge-safe (queue-1 queue-2))
@@ -40,10 +48,18 @@
 ;;; Make queue implementation
 ;;;
 
-(defun make-queue (&key (type 'simple-queue) compare
-		   minimum-size copy)
+(defun make-queue (&key (type 'simple-queue) compare minimum-size copy)
   (case type
     (simple-queue
-     (make-simple-queue :minimum-size minimum-size))
+     (make-simple-queue :minimum-size minimum-size :copy copy))
     (priority-queue
-     (make-priority-queue :copy copy :compare compare))))
+     (make-priority-queue :copy copy :compare compare))
+    (simple-cqueue
+     (make-simple-cqueue :minimum-size minimum-size :copy copy))
+    (priority-cqueue
+     (make-priority-cqueue :copy copy :compare compare))))
+    
+
+;;; ==================================================================
+;;; EOF
+;;; ==================================================================
