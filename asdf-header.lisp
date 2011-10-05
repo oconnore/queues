@@ -40,6 +40,12 @@
        ,(loop for file in files collect
 	     `(:file ,(str file))))))
 
+(quick-defsystem :name queues
+		 :desc "A queue interface -- used to create and
+manipulate queue structures from simple-queue, priority-queue,
+or their concurrent versions (cqueue)."
+		 :files (interface))
+
 ;;; ==================================================================
 ;;; EOF
 ;;; ==================================================================
