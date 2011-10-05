@@ -24,6 +24,14 @@ Thread safe versions are provided in:
 * simple-cqueue
 * priority-cqueue
 
+ASDF systems are:
+     queues.simple-queue
+     queues.simple-cqueue
+     queues.priority-queue
+     queues.priority-cqueue
+Example: (asdf:oos 'asdf:load-op :queues.simple-cqueue) or
+         (require :queues.simple-cqueue)
+
 Bug reports/fixes welcome: <Eric O'Connor> oconnore@gmail.com
 
 ------------------------------ API -----------------------------------
