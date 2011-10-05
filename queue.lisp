@@ -13,9 +13,12 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export '(simple-queue
             qsize
+	    qclear
             qpush
             qpop
-            qtop)))
+            qtop
+	    map-queue
+	    print-queue)))
 
 ;;;
 ;;; Parameters
