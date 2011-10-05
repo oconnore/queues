@@ -8,14 +8,14 @@
 ;;;; **************************************************************************
 ;;;; **************************************************************************
 
-(in-package :simple-queue)
+(in-package :queues)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (export '(queue
-            queue-size
-            queue-push
-            queue-pop
-            queue-top)))
+  (export '(simple-queue
+            qsize
+            qpush
+            qpop
+            qtop)))
 
 ;;;
 ;;; Parameters
@@ -39,11 +39,6 @@
 
 ;;; ------------------------------------------------------------------
 
-(defun simple-queue-p (x)
-  (typep x 'simple-queue))
-
-;;; ------------------------------------------------------------------
-
 (defmethod print-object ((q simple-queue) stream)
   (print-unreadable-object (q stream :type t)
     (format stream "~A [~A]"
@@ -55,22 +50,19 @@
 ;;; Functions
 ;;;
 
-(defun make-simple-queue (&key (minimum-size *minimum-size*)
-			  initial-contents)
-  (let* ((*minimum-size* minimum-size)
-	 (ret (make-instance 'simple-queue)))
-    (loop for x in (reverse initial-contents) do
-	 (queue-push ret x))
-    ret))
+(defun make-simple-queue (&key minimum-size)
+  (let ((*minimum-size* (or minimum-size
+			    *minimum-size*)))
+    (make-instance 'simple-queue)))
 
 ;;; ------------------------------------------------------------------
 
-(defmethod queue-size ((q simple-queue))
+(defmethod qsize ((q simple-queue))
   (size-of q))
 
 ;;; ------------------------------------------------------------------
 
-(defmethod queue-clear ((queue simple-queue))
+(defmethod qclear ((queue simple-queue))
   (loop for x from 0 below (length (elements-of queue))
      do (setf (aref (elements-of queue) x) nil))
   (setf (size-of queue) 0
@@ -85,7 +77,7 @@
 
 ;;; ------------------------------------------------------------------
 
-(defmethod queue-push ((queue simple-queue) element)
+(defmethod qpush ((queue simple-queue) element)
   (let* ((vector (elements-of queue))
 	 (vec-size (length vector))
 	 (start (start-of queue)))
@@ -121,11 +113,11 @@
 
 ;;; ------------------------------------------------------------------
 
-(defmethod queue-pop ((queue simple-queue) &optional empty-value)
-  (let ((ret (queue-top queue))
+(defmethod qpop ((queue simple-queue) &optional empty-value)
+  (let ((ret (qtop queue))
 	(vector (elements-of queue)))
     (unless ret
-      (return-from queue-pop empty-value))
+      (return-from qpop empty-value))
     (setf (aref vector (start-of queue)) nil)
     (decf (size-of queue))
     (setf (start-of queue) (mod (1+ (start-of queue))
@@ -169,7 +161,7 @@
 
 ;;; ------------------------------------------------------------------
 
-(defmethod queue-top ((queue simple-queue))
+(defmethod qtop ((queue simple-queue))
   (when (plusp (size-of queue))
     (values (aref (elements-of queue) (start-of queue))
 	    t)))

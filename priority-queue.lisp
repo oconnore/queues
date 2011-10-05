@@ -2,31 +2,32 @@
 ;;;; **************************************************************************
 ;;;; **************************************************************************
 ;;;; *
-;;;; *         A fibonacci heap implementation
+;;;; *         A fibonacci heap/queue implementation
 ;;;; *         by Eric O'Connor
 ;;;; *
 ;;;; **************************************************************************
 ;;;; **************************************************************************
 
-(in-package :priority-queue)
+(in-package :queues)
 
 ;;; ---------------------------------------------------------------------------
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export '(priority-queue
             make-priority-queue
-            queue-size
+            qsize
             queue-comparison
             print-queue
             *current-queue-node*
             map-queue
             queue-node-p
-            queue-push
-            queue-top
-            queue-pop
-            queue-unite
-            queue-unite-safe
-            queue-decrease-key
+            qpush
+            qtop
+            qpop
+	    qclear
+            queue-merge
+            queue-merge-safe
+	    queue-change
             queue-delete
             queue-find)))
 
@@ -82,7 +83,7 @@
 ;;; Queue operations
 ;;;
 
-(defmethod queue-clear ((queue priority-queue))
+(defmethod qclear ((queue priority-queue))
   (setf (min-node-of queue) nil
         (queue-size queue) 0))
 
@@ -131,33 +132,44 @@
 
 ;;; ---------------------------------------------------------------------------
 
-(defmethod queue-push ((queue priority-queue) element)
+(defun %queue-push (queue element node)
   (let ((min (min-node-of queue)))
     (incf (queue-size queue))
-    (if min
-        (let ((new (%insert (min-node-of queue)
-                            (make-node :value element
-                                       :degree 0))))
-          (when (funcall (queue-comparison queue)
-                         element (node-value min))
-            (setf (min-node-of queue) new)))
-        (setf (min-node-of queue)
-              (let ((node (make-node :value element
-                                     :degree 0)))
-                (setf (node-left node) node
-                      (node-right node) node)))))
+    (flet ((get-node (node element)
+	     (cond ((node
+		     (setf (node-value node) element
+			   (node-degree node) 0)
+		     node))
+		   (t (make-node :value element
+				 :degree 0)))))
+      (if min
+	  (let* ((new-node (get-node node element))
+		 (new (%insert (min-node-of queue) new-node)))
+	    (when (funcall (queue-comparison queue)
+			   element (node-value min))
+	      (setf (min-node-of queue) new)))
+	  (setf (min-node-of queue)
+		(let ((node (get-node node element)))
+		  (setf (node-left node) node
+			(node-right node) node))))))
   element)
+  
 
 ;;; ---------------------------------------------------------------------------
 
-(defmethod queue-top ((queue priority-queue) &optional empty-value)
+(defmethod qpush ((queue priority-queue) element)
+  (%queue-push queue element nil))
+
+;;; ---------------------------------------------------------------------------
+
+(defmethod qtop ((queue priority-queue) &optional empty-value)
   (if (min-node-of queue)
       (values (node-value (min-node-of queue)) t)
       (values empty-value nil)))
 
 ;;; ---------------------------------------------------------------------------
 
-(defun %unite (root1 root2)
+(defun %merge (root1 root2)
   (let ((x (node-left root1))
         (y (node-left root2)))
     (setf (node-left root1) y
@@ -174,7 +186,7 @@
 
 ;;; ---------------------------------------------------------------------------
 
-(defun %queue-unite-metadata (queue1 queue2)
+(defun %queue-merge-metadata (queue1 queue2)
   (let ((min1 (min-node-of queue1))
         (min2 (min-node-of queue2))
         (size1 (queue-size queue1))
@@ -188,15 +200,15 @@
 
 ;;; ---------------------------------------------------------------------------
 
-(defmethod queue-unite ((queue1 priority-queue) (queue2 priority-queue))
+(defmethod queue-merge ((queue1 priority-queue) (queue2 priority-queue))
   "Destructively merges queue2 into queue1"
   (when (%queue-compatible-p queue1 queue2)
     (cond ((not queue1) queue2)
           ((not queue2) queue1)
-          (t (%unite (min-node-of queue1)
+          (t (%merge (min-node-of queue1)
                      (min-node-of queue2))
              (multiple-value-bind (min size)
-                 (%queue-unite-metadata queue1 queue2)
+                 (%queue-merge-metadata queue1 queue2)
                (setf (min-node-of queue1) min
                      (queue-size queue1) size
                      (min-node-of queue2) nil
@@ -229,15 +241,15 @@
 
 ;;; ---------------------------------------------------------------------------
 
-(defmethod queue-unite-safe ((queue1 priority-queue) (queue2 priority-queue)))
-  "Nondestructive unite"
+(defmethod queue-merge-safe ((queue1 priority-queue) (queue2 priority-queue)))
+  "Nondestructive merge"
   (when (%queue-compatible-p queue1 queue2)
     (let* ((new-queue (make-priority-queue :compare (queue-comparison queue1)))
            (min1 (deep-copy (min-node-of queue1)))
            (min2 (deep-copy (min-node-of queue2))))
-      (%unite min1 min2)
+      (%merge min1 min2)
       (multiple-value-bind (min size)
-          (%queue-unite-metadata queue1 queue2)
+          (%queue-merge-metadata queue1 queue2)
         (setf (min-node-of new-queue) min
               (queue-size new-queue) size)
         new-queue))))
@@ -303,7 +315,7 @@
 
 ;;; ---------------------------------------------------------------------------
 
-(defmethod queue-pop ((queue priority-queue) &optional empty-value)
+(defmethod qpop ((queue priority-queue) &optional empty-value)
   (let ((min (min-node-of queue)))
     (unless min
       (return-from queue-pop
@@ -364,12 +376,21 @@
 
 ;;; ---------------------------------------------------------------------------
 
-(defmethod queue-decrease ((queue priority-queue) node newkey)
+(defun queue-decrease (queue node newkey)
   (when (queue-node-p node)
     (unless (funcall (queue-comparison queue) newkey (node-value node))
       (error "new key is greater than old key"))
     (%queue-decrease queue node newkey)
     node))
+
+;;; ---------------------------------------------------------------------------
+
+(defmethod queue-change (queue node newkey)
+  (cond ((funcall (queue-comparison queue) newkey (node-value node))
+	 (queue-decrease queue node newkey))
+	(t
+	 (queue-delete queue node)
+	 (%queue-push queue newkey node))))
 
 ;;; ---------------------------------------------------------------------------
 

@@ -52,19 +52,19 @@
 		 :desc "A queue interface -- used to create and
 manipulate queue structures from simple-queue, priority-queue,
 or their concurrent versions (cqueue)."
-		 :files (package queues-interface))
+		 :files (interface))
 
 ;;; ------------------------------------------------------------------
 
 (quick-defsystem :name queues.simple-queue
 		 :desc "A simple queue implementation"
-		 :files (q-package queue))
+		 :files (queue))
 
 ;;; ------------------------------------------------------------------
 
 (quick-defsystem :name queues.priority-queue
 		 :desc "A priority queue (fibonacci) implementation"
-		 :files (pq-package priority-queue))
+		 :files (priority-queue))
 
 ;;; ------------------------------------------------------------------
 #+not-yet
