@@ -90,6 +90,11 @@
 
 ;;; ---------------------------------------------------------------------------
 
+(defmethod qsize ((queue priority-queue))
+  (queue-size queue))
+
+;;; ---------------------------------------------------------------------------
+
 (defun %insert (node insert)
   (if node
       (let ((right (node-right node)))
