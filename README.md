@@ -95,8 +95,8 @@ Package: queues
 
      Returns the comparison used by queue
 
-Miscellaneous Exported Symbols:
--------------------------------
+### Miscellaneous Exported Symbols:
+
 * queue-node-p
 * *current-queue-node*
 * simple-queue
@@ -104,7 +104,3 @@ Miscellaneous Exported Symbols:
 * simple-cqueue
 * priority-cqueue
 * node-active-p
-
-----------------------------------------------------------------------
- EOF
-----------------------------------------------------------------------
