@@ -1,11 +1,6 @@
 
-**********************************************************************
-**********************************************************************
-
-                        Queues (for Lisp!)
-
-**********************************************************************
-**********************************************************************
+Queues (for Lisp!)
+==================
 
 This is a simple queue library for Common Lisp. It's goals are to
 exist, be simple, nicely wrapped, and efficient.
@@ -25,21 +20,22 @@ Thread safe versions are provided in:
 * priority-cqueue
 
 ASDF systems are:
-     queues.simple-queue
-     queues.simple-cqueue
-     queues.priority-queue
-     queues.priority-cqueue
+* queues.simple-queue
+* queues.simple-cqueue
+* queues.priority-queue
+* queues.priority-cqueue
 Example: (asdf:oos 'asdf:load-op :queues.simple-cqueue) or
          (require :queues.simple-cqueue)
 
 Bug reports/fixes welcome: <Eric O'Connor> oconnore@gmail.com
 
------------------------------- API -----------------------------------
+Application Programming Interface
+---------------------------------
 
 Package: queues
 
-General API functions:
-----------------------
+### General API functions:
+
 * make-queue (&key type comparison copy minimum-size)
      <type> is a symbol, one of
          simple-queue priority-queue
@@ -65,8 +61,8 @@ General API functions:
       can be used to call #'queue-change or #'queue-delete.
 * print-queue (queue)
 
-Priority Queue Only:
---------------------
+### Priority Queue Only:
+
 * queue-merge (queue-1 queue-2)
      Destructively merges queue-2 into queue-2 if they are compatible
      Queues are compatible when they have #'eq comparison tests.
