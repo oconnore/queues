@@ -39,17 +39,17 @@ Package: queues
 
 * make-queue (&key type comparison copy minimum-size)
 
-    * <type> is a symbol, one of
+    * __type__ is a symbol, one of
          * simple-queue
          * priority-queue
          * simple-cqueue
          * priority-cqueue
 
-    * <copy> is another queue of the same type, which will be duplicated in the newly created queue
+    * __copy__ is another queue of the same type, which will be duplicated in the newly created queue
 
-    * <comparison> is a function of two arguments that returns true when the first should be returned before the second.  For example: #'< or #'> for min and max respectively.  Obviously this is only used with priority queues
+    * __comparison__ is a function of two arguments that returns true when the first should be returned before the second.  For example: #'< or #'> for min and max respectively.  Obviously this is only used with priority queues
 
-    * <minimum-size> is the minimum size of the queue. This is only applicable to simple-queues
+    * __minimum-size__ is the minimum size of the queue. This is only applicable to simple-queues
 
 * qpush (queue element)
 
@@ -57,7 +57,7 @@ Package: queues
 
 * qpop (queue &optional (empty nil))
 
-    * <empty> is the value returned if the queue is empty. The second value returned is t when an element was found.
+    * __empty__ is the value returned if the queue is empty. The second value returned is t when an element was found.
 
 * qtop (queue &optional empty)
 
