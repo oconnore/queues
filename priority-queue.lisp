@@ -139,14 +139,13 @@
 ;;; ---------------------------------------------------------------------------
 
 (defun %queue-push (queue element rnode)
-  (declare (optimize (debug 3)))
   (let ((min (min-node-of queue)))
     (incf (queue-size queue))
     (flet ((get-node (node)
 	     (cond ((queue-node-p node)
-		     (setf (node-value node) element
-			   (node-degree node) 0)
-		     node)
+		    (setf (node-value node) element
+			  (node-degree node) 0)
+		    node)
 		   (t (make-node :value element
 				 :degree 0)))))
       (if min
@@ -154,13 +153,14 @@
 		 (new (%insert (min-node-of queue) new-node)))
 	    (when (funcall (queue-comparison queue)
 			   element (node-value min))
-	      (setf (min-node-of queue) new)))
-	  (setf (min-node-of queue)
-		(let ((node (get-node rnode)))
-		  (setf (node-left node) node
-			(node-right node) node))))))
-  element)
-  
+	      (setf (min-node-of queue) new))
+	    (values element new-node))
+	  (values element
+		  (setf (min-node-of queue)
+			(let ((node (get-node rnode)))
+			  (setf (node-left node) node
+				(node-right node) node)
+			  node)))))))
 
 ;;; ---------------------------------------------------------------------------
 
@@ -290,10 +290,13 @@
 ;;; ---------------------------------------------------------------------------
 
 (defun queue-consolidate (queue)
+  (unless (>= (queue-size queue) 2)
+    (return-from queue-consolidate nil))
   (let ((unique (make-array (ceiling (log (queue-size queue) 1.618))
                             :initial-element nil)))
     (map-siblings
      (lambda (node &aux (degree (node-degree node)))
+       (declare (optimize (debug 3)))
        (unless (node-parent node)
          (loop while (aref unique degree) do
               (let ((other (aref unique degree)))
@@ -322,10 +325,10 @@
 
 ;;; ---------------------------------------------------------------------------
 
-(defmethod qpop ((queue priority-queue) &optional empty-value)
+(defun %queue-pop (queue empty-value)
   (let ((min (min-node-of queue)))
     (unless min
-      (return-from qpop
+      (return-from %queue-pop
         (values empty-value nil)))
     (labels ((add-children (node)
                (map-children (lambda (x)
@@ -336,6 +339,11 @@
       (queue-consolidate queue)
       (decf (queue-size queue)))
     (values (node-value min) t)))
+
+;;; ---------------------------------------------------------------------------
+
+(defmethod qpop ((queue priority-queue) &optional empty-value)
+  (%queue-pop queue empty-value))
 
 ;;; ---------------------------------------------------------------------------
 
@@ -396,12 +404,12 @@
   (cond ((funcall (queue-comparison queue) newkey (node-value node))
 	 (queue-decrease queue node newkey))
 	(t
-	 (queue-delete queue node)
+	 (%queue-delete queue node)
 	 (%queue-push queue newkey node))))
 
 ;;; ---------------------------------------------------------------------------
 
-(defmethod queue-delete ((queue priority-queue) node)
+(defun %queue-delete (queue node)
   (unless (queue-node-p node)
     (setf node (queue-find queue node)))
   (when (queue-node-p node)
@@ -410,8 +418,13 @@
         (%node-cut queue node parent)
         (%node-cascading-cut queue parent))
       (setf (min-node-of queue) node)
-      (qpop queue)
+      (%queue-pop queue nil)
       (node-value node))))
+
+;;; ---------------------------------------------------------------------------
+
+(defmethod queue-delete ((queue priority-queue) node)
+  (%queue-delete queue node))
 
 ;;;
 ;;; Printing and mapping
