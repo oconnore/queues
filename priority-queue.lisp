@@ -21,6 +21,7 @@
             *current-queue-node*
             map-queue
             queue-node-p
+	    node-active-p
             qpush
             qtop
             qpop
@@ -38,7 +39,8 @@
 (defstruct (node
              (:predicate queue-node-p)
              :named)
-  left right value parent child degree mark)
+  left right value parent child degree mark
+  (active t))
 
 (defmethod print-object ((n node) s)
   (print-unreadable-object (n s :type t)
@@ -50,6 +52,9 @@
   ((min-node :type (or node null)
              :initform nil
              :accessor min-node-of)
+   (nodes :type hash-table
+	  :initform (make-hash-table :test 'eq)
+	  :accessor nodes-of)
    (size :type fixnum
          :initform 0
          :accessor queue-size)
@@ -85,6 +90,10 @@
 ;;;
 
 (defmethod qclear ((queue priority-queue))
+  ;; Mark nodes as inactive
+  (dfs-forest (lambda (x)
+		(setf (node-active x) nil))
+	      (min-node-of queue))
   (setf (min-node-of queue) nil
         (queue-size queue) 0))
 
@@ -158,8 +167,9 @@
 	  (values element
 		  (setf (min-node-of queue)
 			(let ((node (get-node rnode)))
-			  (setf (node-left node) node
-				(node-right node) node)
+			  (setf
+			   (node-left node) node
+			   (node-right node) node)
 			  node)))))))
 
 ;;; ---------------------------------------------------------------------------
@@ -323,6 +333,7 @@
              (setf min x)))
        finally (setf (min-node-of queue) min))))
 
+
 ;;; ---------------------------------------------------------------------------
 
 (defun %queue-pop (queue empty-value)
@@ -338,6 +349,8 @@
       (setf (min-node-of queue) (%remove min))
       (queue-consolidate queue)
       (decf (queue-size queue)))
+    ;; Mark inactive
+    (setf (node-active min) nil)
     (values (node-value min) t)))
 
 ;;; ---------------------------------------------------------------------------
@@ -401,7 +414,10 @@
 ;;; ---------------------------------------------------------------------------
 
 (defmethod queue-change ((queue priority-queue) node newkey)
-  (cond ((funcall (queue-comparison queue) newkey (node-value node))
+  (cond ((or (not (queue-node-p node))
+	     (not (node-active node)))
+	 (return-from queue-change nil))
+	((funcall (queue-comparison queue) newkey (node-value node))
 	 (queue-decrease queue node newkey))
 	(t
 	 (%queue-delete queue node)
@@ -412,19 +428,27 @@
 (defun %queue-delete (queue node)
   (unless (queue-node-p node)
     (setf node (queue-find queue node)))
-  (when (queue-node-p node)
+  (when (and (queue-node-p node)
+	     (node-active node))
     (let ((parent (node-parent node)))
       (when parent
         (%node-cut queue node parent)
         (%node-cascading-cut queue parent))
       (setf (min-node-of queue) node)
       (%queue-pop queue nil)
+      (setf (node-active node) nil)
       (node-value node))))
 
 ;;; ---------------------------------------------------------------------------
 
 (defmethod queue-delete ((queue priority-queue) node)
   (%queue-delete queue node))
+
+;;; ---------------------------------------------------------------------------
+
+(defmethod node-active-p ((queue priority-queue) node)
+  (declare (ignore queue)) ;; queue only included for serialization in cqueue
+  (node-active node))
 
 ;;;
 ;;; Printing and mapping

@@ -90,6 +90,10 @@
   (with-lock-held ((lock-of q))
     (call-next-method)))
 
+(defmethod node-active-p ((q priority-cqueue) node)
+  (with-lock-held ((lock-of q))
+    (call-next-method)))
+
 (defmethod queue-comparison ((q priority-cqueue))
   "No need for synchronization, since the comparison is constant"
   (call-next-method))

@@ -37,6 +37,7 @@
 (defgeneric map-queue (fn queue))
 (defgeneric print-queue (queue &optional stream))
 ;; Priority queue
+(defgeneric node-active-p (queue node))
 (defgeneric queue-merge (queue-1 queue-2))
 (defgeneric queue-merge-safe (queue-1 queue-2))
 (defgeneric queue-find (queue predicate-or-key))
