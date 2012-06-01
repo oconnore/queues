@@ -37,13 +37,13 @@ Package: queues
 
 ### General API functions:
 
-* **make-queue** (&key type comparison copy minimum-size)
+* **make-queue** (type &key comparison copy minimum-size)
 
     * __type__ is a symbol, one of
-         * simple-queue
-         * priority-queue
-         * simple-cqueue
-         * priority-cqueue
+         * :simple-queue
+         * :priority-queue
+         * :simple-cqueue
+         * :priority-cqueue
 
     * __copy__ is another queue of the same type, which will be duplicated in the newly created queue
 
