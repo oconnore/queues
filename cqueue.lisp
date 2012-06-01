@@ -25,10 +25,11 @@
 ;;; Methods
 ;;;
 
-(defun make-simple-cqueue (&key minimum-size copy)
-  (make-simple-queue :minimum-size minimum-size
-		     :copy copy
-		     :class 'simple-cqueue))
+(defmethod make-queue ((type (eql :simple-cqueue)) &key minimum-size copy)
+  (make-queue :simple-queue
+	      :minimum-size minimum-size
+	      :copy copy
+	      :class 'simple-cqueue))
 
 (defmethod qpush ((q simple-cqueue) el)
   (with-lock-held ((lock-of q))

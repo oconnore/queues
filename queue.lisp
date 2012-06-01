@@ -53,13 +53,13 @@
 ;;; Functions
 ;;;
 
-(defun make-simple-queue (&key minimum-size copy (class 'simple-queue))
+(defmethod make-queue ((type (eql :simple-queue)) &key minimum-size copy (class 'simple-queue))
   (let* ((*minimum-size* (or (when copy
 			       (length (elements-of copy)))
 			     minimum-size
 			     *minimum-size*))
 	 (queue (make-instance class)))
-    (when (typep copy 'simple-queue)
+    (when (typep copy class)
       (loop
 	 with vec = (elements-of queue)
 	 with cvec = (elements-of copy)

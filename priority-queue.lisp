@@ -52,9 +52,6 @@
   ((min-node :type (or node null)
              :initform nil
              :accessor min-node-of)
-   (nodes :type hash-table
-	  :initform (make-hash-table :test 'eq)
-	  :accessor nodes-of)
    (size :type fixnum
          :initform 0
          :accessor queue-size)
@@ -74,11 +71,11 @@
 ;;; Queue construction
 ;;;
 
-(defun make-priority-queue (&key compare copy (class 'priority-queue))
+(defmethod make-queue ((type (eql :priority-queue)) &key compare copy (class 'priority-queue))
   (if copy
       (let* ((queue (make-instance
 		     class
-                    :compare (queue-comparison copy))))
+		     :compare (queue-comparison copy))))
         (setf (min-node-of queue) (deep-copy (min-node-of copy))
               (queue-size queue) (queue-size copy))
         queue)
@@ -270,21 +267,6 @@
         (setf (min-node-of new-queue) min
               (queue-size new-queue) size)
         new-queue))))
-
-;;; ---------------------------------------------------------------------------
-
-(defun ilog  (base j &aux (n 1))
-  (labels ((f (m b k)
-             (cond ((> b k) k)
-                   (t (incf n m)
-                      (let ((h (f (* 2 m)
-                                  (* b b)
-                                  (floor k b))))
-                        (cond ((> b h) h)
-                              (t (incf n m) (floor h b))))))))
-    (cond ((> base j) 0)
-          (t (f 1 base (floor j base))
-             n))))
 
 ;;; ---------------------------------------------------------------------------
 

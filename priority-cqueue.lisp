@@ -25,10 +25,11 @@
 ;;; Methods
 ;;;
 
-(defun make-priority-cqueue (&key compare copy)
-  (make-priority-queue :compare compare
-		       :copy copy
-		       :class 'priority-cqueue))
+(defmethod make-queue ((type (eql :priority-cqueue)) &key compare copy)
+  (make-queue :priority-queue
+	      :compare compare
+	      :copy copy
+	      :class 'priority-cqueue))
 
 (defmethod qpush ((q priority-cqueue) el)
   (with-lock-held ((lock-of q))
