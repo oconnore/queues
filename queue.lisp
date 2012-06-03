@@ -10,16 +10,6 @@
 
 (in-package :queues)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export '(simple-queue
-            qsize
-	    qclear
-            qpush
-            qpop
-            qtop
-	    map-queue
-	    print-queue)))
-
 ;;;
 ;;; Parameters
 ;;;

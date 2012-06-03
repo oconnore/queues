@@ -11,16 +11,33 @@
 
 (defpackage queues
   (:use cl)
-  (:nicknames q))
+  (:nicknames q)
+  (:export simple-queue
+	   simple-cqueue
+	   priority-queue
+	   priority-cqueue
+	   ;; general interface
+	   make-queue
+	   qsize
+	   qclear
+	   qpush
+	   qpop
+	   qtop
+	   map-queue
+	   print-queue
+	   ;; priority queues
+	   queue-comparison
+	   queue-merge
+	   queue-merge-safe
+	   queue-change
+	   queue-delete
+	   queue-find
+	   ;; miscellaneous
+	   *current-queue-node*
+	   queue-node-p
+	   node-active-p))
 
 (in-package :queues)
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export '(simple-queue
-	    simple-cqueue
-	    priority-queue
-	    priority-cqueue
-	    make-queue)))
 
 ;;;
 ;;; Interface generics

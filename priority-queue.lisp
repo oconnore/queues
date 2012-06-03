@@ -10,28 +10,6 @@
 
 (in-package :queues)
 
-;;; ---------------------------------------------------------------------------
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export '(priority-queue
-            make-priority-queue
-            qsize
-            queue-comparison
-            print-queue
-            *current-queue-node*
-            map-queue
-            queue-node-p
-	    node-active-p
-            qpush
-            qtop
-            qpop
-	    qclear
-            queue-merge
-            queue-merge-safe
-	    queue-change
-            queue-delete
-            queue-find)))
-
 ;;;
 ;;; Data structures
 ;;;
