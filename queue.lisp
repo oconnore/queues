@@ -111,7 +111,8 @@
 		       for x from start below vec-size
 		       for y from (- new-size (- vec-size start))
 		       do (setf (aref vector y) (aref vector x)
-				(aref vector x) nil)))))))
+				(aref vector x) nil))
+		    (setf (start-of queue) (- new-size (- vec-size start))))))))
     (setf (aref vector (%queue-last queue))
 	  element)
     (incf (size-of queue))
@@ -123,7 +124,7 @@
   (let ((ret (when (plusp (size-of queue))
 	       (aref (elements-of queue) (start-of queue))))
 	(vector (elements-of queue)))
-    (unless ret
+    (unless (> (qsize queue) 0)
       (return-from qpop empty-value))
     (setf (aref vector (start-of queue)) nil)
     (decf (size-of queue))

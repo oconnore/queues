@@ -16,7 +16,7 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defparameter *author* "Eric O'Connor")
-  (defparameter *version* "1.0.0")
+  (defparameter *version* "1.1.0")
   (defparameter *license* "MIT"))
 
 ;;;
