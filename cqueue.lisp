@@ -32,35 +32,35 @@
 	      :class 'simple-cqueue))
 
 (defmethod qpush ((q simple-cqueue) el)
-  (with-lock-held ((lock-of q))
+  (with-recursive-lock-held ((lock-of q))
     (call-next-method)))
 
 (defmethod qpop ((q simple-cqueue) &optional empty)
   (declare (ignore empty))
-  (with-lock-held ((lock-of q))
+  (with-recursive-lock-held ((lock-of q))
     (call-next-method)))
 
 (defmethod qtop ((q simple-cqueue) &optional empty)
   (declare (ignore empty))
-  (with-lock-held ((lock-of q))
+  (with-recursive-lock-held ((lock-of q))
     (call-next-method)))
 
 (defmethod qsize ((q simple-cqueue))
-  (with-lock-held ((lock-of q))
+  (with-recursive-lock-held ((lock-of q))
     (call-next-method)))
 
 (defmethod qclear ((q simple-cqueue))
-  (with-lock-held ((lock-of q))
+  (with-recursive-lock-held ((lock-of q))
     (call-next-method)))
 
 (defmethod map-queue (fn (q simple-cqueue))
-  (with-lock-held ((lock-of q))
+  (with-recursive-lock-held ((lock-of q))
     (call-next-method)))
 
 (defmethod print-queue ((q simple-cqueue)
 			&optional (stream *standard-output*))
   (declare (ignore stream))
-  (with-lock-held ((lock-of q))
+  (with-recursive-lock-held ((lock-of q))
     (call-next-method)))
 
 ;;; ==================================================================
