@@ -236,7 +236,7 @@
 (defmethod queue-merge-safe ((queue1 priority-queue) (queue2 priority-queue))
   "Nondestructive merge"
   (when (%queue-compatible-p queue1 queue2)
-    (let* ((new-queue (make-priority-queue :compare (queue-comparison queue1)))
+    (let* ((new-queue (make-queue :priority-queue :compare (queue-comparison queue1)))
            (min1 (deep-copy (min-node-of queue1)))
            (min2 (deep-copy (min-node-of queue2))))
       (%merge min1 min2)
